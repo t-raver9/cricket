@@ -2,7 +2,7 @@ import urllib3
 import os
 from bs4 import BeautifulSoup as bs
 import json
-from typing import List
+from typing import List, Dict, NoReturn
 
 base_url = 'http://stats.espncricinfo.com'
 
@@ -10,7 +10,7 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
-def get_soup(url: str) -> list:
+def get_soup(url: str) -> List:
     """
     Function to get the 'soup', i.e. the page contents, of any pages required
     """
@@ -20,7 +20,7 @@ def get_soup(url: str) -> list:
 
     return soup
 
-def get_season_urls() -> list:
+def get_season_urls() -> List:
     """
     Function to get the URLs of every season test cricket has been played. Each
     of these URLs holds the matches played in that year
@@ -40,7 +40,7 @@ def get_season_urls() -> list:
 
     return season_urls
 
-def get_match_urls(season_urls: list) -> dict:
+def get_match_urls(season_urls: List) -> Dict:
     """
     Get the URLs for each match. Input is the URLs which hold the
     matches for each season.
@@ -63,7 +63,7 @@ def get_match_urls(season_urls: list) -> dict:
 
     return season_match_dict
 
-def match_urls_to_json(season_match_dict: dict):
+def match_urls_to_json(season_match_dict: Dict) -> NoReturn:
     """
     Writes a dictionary of seasons, with the URLs of each match in that season,
     to a JSON
