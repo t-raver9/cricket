@@ -18,9 +18,13 @@ class Innings:
         self.batsmen = []
         self.bowlers = []
         self.scores = []
+        self.batsman_features = []
 
     def add_batsman(self,batsman):
         self.batsmen.append(batsman)
+
+    def add_batsman_features(self,features):
+        self.batsman_features.extend(features)
 
 class Batsman:
     def __init__(self,name:str,position:int,how_out:str,runs:str,balls_faced:str,
@@ -53,23 +57,12 @@ def get_batting_team(soup):
         team = heading.split()[0]
     return team
 
-
-path = "/Users/t_raver9/Desktop/projects/cricket/outputs/matches/1990/63534.html"
-with open(path) as f:
-    contents = f.read()
-
-soup = bs(contents,features="lxml")
-
 def get_batsman_data(soup):
-    name = cell.find("div",{"class":"cell batsmen"}).text
-    how_out = cell.find("div",{"class":"cell commentary"}).text
-    runs = cell.find("div",{"class":"cell runs"}).text
-    balls_faced = cell.find_all("div",{"class":"cell runs"})[1].text
-    minutes = cell.find_all("div",{"class":"cell runs"})[2].text
-    fours = cell.find_all("div",{"class":"cell runs"})[3].text
-    sixes = cell.find_all("div",{"class":"cell runs"})[4].text
-    strike_rate = cell.find_all("div",{"class":"cell runs"})[5].text
-
+    data = []
+    for div in soup.find_all("div"):
+        if div['class'] != ["cell", "highlight" ,"active"]:
+            data.append(div.text)
+    name,how_out,runs,balls_faced,minutes,fours,sixes,strike_rate = [datum for datum in data]
     return name,how_out,runs,balls_faced,minutes,fours,sixes,strike_rate
 
 def get_bowler_data(tr):
@@ -80,6 +73,13 @@ def get_bowler_data(tr):
     name,overs,maidens,runs,wickets,econ,wd,nb = [datum for datum in data]
     return name,overs,maidens,runs,wickets,econ,wd,nb 
 
+
+path = "/Users/t_raver9/Desktop/projects/cricket/outputs/matches/1990/63534.html"
+with open(path) as f:
+    contents = f.read()
+
+soup = bs(contents,features="lxml")
+
 # Create match object
 match = Match()
 
@@ -88,7 +88,7 @@ teams = set()
 for team in soup.findAll("span", {"class": "cscore_name cscore_name--long"}):
     teams.add(team.text)
 
-# Get the scorecards of each innings
+# Get the scorecard HTML of each innings
 innings_soup_list = []
 for innings_soup in soup.findAll("article", {"class": "sub-module scorecard"}):
     innings_soup_list.append(innings_soup)
@@ -131,5 +131,14 @@ for bowling_scorecard_obj in soup.findAll("div", {"class":"scorecard-section bow
 
     inning_idx += 1
 
-print(match.innings[0].bowlers[0].name)
-print(match.innings[0].bowlers[0].position)
+# Find the headers for each innnings so you know what batsman data is available.
+# Use this data to create a list of the data that's available in that inning
+inning_idx = 0
+for header in soup.find_all("div", {"class":"wrap header"}):
+    innings_features = []
+    for stat_header in header.find_all("div", {"class":"cell runs"}):
+        innings_features.append(stat_header.text)
+    match.innings[inning_idx].batsman_features.extend(innings_features)
+    inning_idx += 1
+
+print(match.innings[0].batsman_features)
