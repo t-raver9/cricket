@@ -17,7 +17,6 @@ def get_soup(url: str) -> List:
     http = urllib3.PoolManager()
     response = http.request('GET',url)
     soup = bs(response.data,features="lxml")
-
     return soup
 
 def get_season_urls() -> List:
@@ -25,10 +24,8 @@ def get_season_urls() -> List:
     Function to get the URLs of every season test cricket has been played. Each
     of these URLs holds the matches played in that year
     """
-
     url = r'http://stats.espncricinfo.com/ci/content/records/307847.html'
     soup = get_soup(url)
-
     print("Getting URLs for each season")
 
     season_urls = []
@@ -37,7 +34,6 @@ def get_season_urls() -> List:
             season_urls.append(link.get('href'))
 
     print("Season URLs downloaded")
-
     return season_urls
 
 def get_match_urls(season_urls: List) -> Dict:
