@@ -73,6 +73,9 @@ def get_bowler_data(tr):
     name,overs,maidens,runs,wickets,econ,wd,nb = [datum for datum in data]
     return name,overs,maidens,runs,wickets,econ,wd,nb 
 
+#def available_batsman_data():
+
+
 
 path = "/Users/t_raver9/Desktop/projects/cricket/outputs/matches/1990/63534.html"
 with open(path) as f:
@@ -94,12 +97,18 @@ for innings_soup in soup.findAll("article", {"class": "sub-module scorecard"}):
     innings_soup_list.append(innings_soup)
 
 # For each innings, find out who the team is and which innings it is
+# The accordion header gives you the batting section of the card
 innings_ordered = OrderedDict()
 innings_num = 1
 for innings_soup in innings_soup_list:
     batting_team = innings_soup.find("div",{"class":"accordion-header"}).text.split()[0]
     inning = Innings(num=innings_num,batting_team=batting_team,teams=teams)
     match.add_innings(inning)
+
+    # Find out the data available for the batsmen
+    for header in innings_soup.find_all("div", {"class":"wrap header"}):
+        for stat_header in header.find_all("div", {"class":"cell runs"}):
+            inning.add_batsman_features(stat_header)
     
     # For each inning, get the details for each batsman
     batsman_cells = []
@@ -130,15 +139,3 @@ for bowling_scorecard_obj in soup.findAll("div", {"class":"scorecard-section bow
         position += 1
 
     inning_idx += 1
-
-# Find the headers for each innnings so you know what batsman data is available.
-# Use this data to create a list of the data that's available in that inning
-inning_idx = 0
-for header in soup.find_all("div", {"class":"wrap header"}):
-    innings_features = []
-    for stat_header in header.find_all("div", {"class":"cell runs"}):
-        innings_features.append(stat_header.text)
-    match.innings[inning_idx].batsman_features.extend(innings_features)
-    inning_idx += 1
-
-print(match.innings[0].batsman_features)
